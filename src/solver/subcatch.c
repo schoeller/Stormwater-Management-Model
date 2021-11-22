@@ -483,6 +483,10 @@ void  subcatch_initState(int j)
         Subcatch[j].subArea[i].depth  = 0.0;
         Subcatch[j].subArea[i].inflow = 0.0;
         Subcatch[j].subArea[i].runoff = 0.0;
+        Subcatch[j].subArea[i].V1 = 0.0;
+        Subcatch[j].subArea[i].V2 = 0.0;
+        Subcatch[j].subArea[i].V3 = 0.0;
+        Subcatch[j].subArea[i].actdStore = 0.0;
     }
 
     // --- initialize runoff quality
