@@ -417,6 +417,32 @@ void  subcatch_validate(int j)
         }
     }
 
+    // --- compute retention constant for each type of subarea (Kerby)  
+    for (i = IMPERV0; i <= PERV; i++)                                      
+    {
+		Subcatch[j].subArea[i].kret = 0.831 * 60 *
+			pow(Subcatch[j].width * Subcatch[j].subArea[i].N / 
+			sqrt(Subcatch[j].slope), 0.468);
+		
+		// --- default value for kret when slope = 0
+		if (Subcatch[j].slope == 0.0)
+		{
+			Subcatch[j].subArea[i].kret = 300.0;
+		}
+
+		// --- default value for kret when width = 0
+        if (Subcatch[j].width == 0.0)
+		{
+			Subcatch[j].subArea[i].kret = 1.0;
+		}
+
+		// --- reduce kret on subareas w/o depression storage
+		if ( i == IMPERV0 )
+        {
+			Subcatch[j].subArea[i].kret *= 0.9;
+        }
+    }
+
     // --- set isUsed property of subcatchment's rain gage                     //(5.1.013)
     i = Subcatch[j].gage;                                                      //
     if (i >= 0) Gage[i].isUsed = TRUE;                                         //
