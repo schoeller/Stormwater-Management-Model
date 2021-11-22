@@ -59,6 +59,7 @@ char* ForceMainEqnWords[]  = { w_H_W, w_D_W, NULL};
 char* GageDataWords[]      = { w_TIMESERIES, w_FILE, NULL};
 char* InfilModelWords[]    = { w_HORTON, w_MOD_HORTON, w_GREEN_AMPT,
                                w_MOD_GREEN_AMPT, w_CURVE_NUMEBR, NULL};
+char* RunoffModelWords[]   = { w_MANNING, w_CASCADE, NULL};
 char* InertDampingWords[]  = { w_NONE, w_PARTIAL, w_FULL, NULL};
 char* LinkOffsetWords[]    = { w_DEPTH, w_ELEVATION, NULL};
 char* LinkTypeWords[]      = { w_CONDUIT, w_PUMP, w_ORIFICE,
@@ -94,6 +95,7 @@ char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
                                w_SYS_FLOW_TOL,      w_LAT_FLOW_TOL,
                                w_IGNORE_RDII,       w_MIN_ROUTE_STEP,
                                w_NUM_THREADS,       w_SURCHARGE_METHOD,        //(5.1.013)
+                               w_RUNOFF_MODEL,
                                NULL };
 char* OrificeTypeWords[]   = { w_SIDE, w_BOTTOM, NULL};
 char* OutfallTypeWords[]   = { w_FREE, w_NORMAL, w_FIXED, w_TIDAL,

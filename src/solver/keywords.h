@@ -52,6 +52,7 @@ extern char* RainUnitsWords[];
 extern char* ReportWords[];
 extern char* RelationWords[];
 extern char* RouteModelWords[];
+extern char* RunoffModelWords[];
 extern char* RuleKeyWords[];
 extern char* SectWords[];
 extern char* SnowmeltWords[];

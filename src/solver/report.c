@@ -332,6 +332,9 @@ void report_writeOptions()
     if ( Nobjects[SUBCATCH] > 0 )
     fprintf(Frpt.file, "\n  Infiltration Method ...... %s",
         InfilModelWords[InfilModel]);
+    if ( Nobjects[SUBCATCH] > 0 )
+    fprintf(Frpt.file, "\n  Runoff Method ............ %s",
+        RunoffModelWords[RunoffModel]);
     if ( Nobjects[LINK] > 0 )
     fprintf(Frpt.file, "\n  Flow Routing Method ...... %s",
         RouteModelWords[RouteModel]);

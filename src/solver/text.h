@@ -67,6 +67,7 @@
 // Analysis Option Keywords
 #define  w_FLOW_UNITS        "FLOW_UNITS"
 #define  w_INFIL_MODEL       "INFILTRATION"
+#define  w_RUNOFF_MODEL      "RUNOFF_MODEL"
 #define  w_ROUTE_MODEL       "FLOW_ROUTING"
 #define  w_START_DATE        "START_DATE"
 #define  w_START_TIME        "START_TIME"
@@ -138,6 +139,10 @@
 #define  w_GREEN_AMPT        "GREEN_AMPT"
 #define  w_MOD_GREEN_AMPT    "MODIFIED_GREEN_AMPT"
 #define  w_CURVE_NUMEBR      "CURVE_NUMBER"
+
+// Runoff Methods
+#define  w_MANNING           "MANNING"
+#define  w_CASCADE           "CASCADE"
 
 // Normal Flow Criteria
 #define  w_SLOPE             "SLOPE"
