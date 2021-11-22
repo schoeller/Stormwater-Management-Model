@@ -319,6 +319,10 @@ enum  WindType {
       RATING_WASHOFF,                  // rating curve washoff equation
       EMC_WASHOFF};                    // event mean concentration washoff
 
+enum RunoffType {
+      MANNING,                         // Manning Method
+      CASCADE};                        // Nash Cascade
+
 enum  SubAreaType {
       IMPERV0,                         // impervious w/o depression storage
       IMPERV1,                         // impervious w/ depression storage
