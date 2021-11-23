@@ -116,6 +116,8 @@ static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
 static void   getNetPrecip(int j, double* netPrecip, double tStep);
 static double getSubareaRunoff(int subcatch, int subarea, double area,
               double rainfall, double evap, double tStep);
+static double getSubareaRunoffCascade(int subcatch, int subarea, double area,
+              double rainfall, double evap, double tStep);
 static double getSubareaInfil(int j, TSubarea* subarea, double precip,
               double tStep);
 static double findSubareaRunoff(TSubarea* subarea, double tRunoff);
@@ -736,8 +738,16 @@ double subcatch_getRunoff(int j, double tStep)
         // --- get runoff from sub-area updating Vevap, Vpevap,
         //     Vinfil & Voutflow)
         area = nonLidArea * Subcatch[j].subArea[i].fArea;
-        Subcatch[j].subArea[i].runoff =
-            getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
+        if (RunoffModel == 0)
+        {
+            Subcatch[j].subArea[i].runoff =
+                getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
+        }
+        if (RunoffModel == 1)
+        {
+            Subcatch[j].subArea[i].runoff =
+                getSubareaRunoffCascade(j, i, area, netPrecip[i], evapRate, tStep);
+        }        
         subAreaRunoff = Subcatch[j].subArea[i].runoff * area;                  //(5.1.013)
         if (i == PERV) vPervRunoff = subAreaRunoff * tStep;                    //
         else           vImpervRunoff += subAreaRunoff * tStep;                 //
@@ -1039,6 +1049,175 @@ double getSubareaRunoff(int j, int i, double area, double precip, double evap,
     //     (fOutlet is the fraction of this subarea's runoff that goes to the
     //     subcatchment outlet as opposed to another subarea of the subcatchment)
     Voutflow += subarea->fOutlet * runoff * area * tStep;
+    return runoff;
+}
+
+//=============================================================================
+
+double getSubareaRunoffCascade(int j, int i, double area, double precip, double evap,
+    double tStep)
+//
+//  Purpose: computes runoff & losses from a subarea over the current time step.
+//  Method:  cascade of linear reservoirs
+//  Input:   j = subcatchment index
+//           i = subarea index
+//           area = sub-area area (ft2)
+//           precip = rainfall + snowmelt over subarea (ft/sec)
+//           evap = evaporation (ft/sec)
+//           tStep = time step (sec)
+//  Output:  returns runoff rate from the sub-area (cfs);
+//           updates shared variables Vinflow, Vevap, Vpevap, Vinfil & Voutflow.
+//
+{
+    double    tRunoff;                 // time over which runoff occurs (sec)
+    double    oldRunoff;         // runoff from previous time period
+    double    surfMoisture;            // surface water available (ft/sec)
+    double    surfEvap;                // evap. used for surface water (ft/sec)
+    double    infil = 0.0;             // infiltration rate (ft/sec)
+    double    runoff = 0.0;            // runoff rate (ft/sec)
+    TSubarea* subarea;                 // pointer to subarea being analyzed
+
+    double    subsize;                 // size of the subarea (ft2)
+    double    Qin;					   // inflow to the cascade (ft3/s)
+    double    kret;                    // retention constant (sec)
+    double    V1pre;                   // volume of 1. reservoir, previous time period (ft3)
+    double    Q1;                      // runoff from 1. reservoir, actual time period (ft3/sec)
+    double    V2pre;                   // volume of 2. reservoir, previous time period (ft3)
+    double    Q2;                      // runoff from 2. reservoir, actual time period (ft3/sec)
+    double    V3pre;                   // volume of 3. reservoir, previous time period (ft3)
+    double    Q3;                      // runoff from 3. reservoir, actual time period (ft3/sec)
+    double    Losses = 0.0;            // intermediate variable for depression storage
+    double    Outflow = 0.0;           // intermediate variable for outflow
+
+    // --- initialize runoff & losses
+    oldRunoff = subarea->runoff;
+    //subarea->runoff = 0.0;
+    //infil    = 0.0;
+    //Vevap    = 0.0;
+    //Vinfil   = 0.0;
+    //Voutflow = 0.0;
+    //Losses   = 0.0;
+    //Outflow  = 0.0;                                                           //SSC
+
+    // --- initialize cascade volumes  
+    V1pre = subarea->V1;
+    V2pre = subarea->V2;
+    V3pre = subarea->V3;
+
+    // --- set retention constant
+    kret = subarea->kret;
+
+    // --- set size of subarea
+    subsize = Subcatch[j].area * subarea->fArea;
+
+    // --- no runoff if no area
+    if ( area == 0.0 ) return 0.0;
+
+    // --- assign pointer to current subarea
+    subarea = &Subcatch[j].subArea[i];
+
+    // --- assume runoff occurs over entire time step
+    tRunoff = tStep;
+
+    // --- determine evaporation loss rate
+    //surfMoisture = subarea->depth / tStep;
+    surfMoisture = subarea->actdStore / tStep;
+    surfEvap = MIN(surfMoisture, evap);
+
+    // --- compute infiltration loss rate
+    if ( i == PERV ) infil = getSubareaInfil(j, subarea, precip, tStep);
+
+    // --- add precip to other subarea inflows
+    subarea->inflow += precip;
+    surfMoisture += subarea->inflow;
+
+    // --- update total inflow, evaporation & infiltration volumes
+    Vinflow += precip * area * tStep;
+    Vevap += surfEvap * area * tStep;
+    if ( i == PERV ) Vpevap += Vevap;
+    Vinfil += infil * area * tStep;
+
+    // --- assign adjusted runoff coeff. & storage to shared variables         //(5.1.013)
+    //Alpha = subarea->alpha;                                                    //SSC
+    //Dstore = subarea->dStore;                                                  //SSC
+    //adjustSubareaParams(i, j);                                                 //SSC
+
+    // --- if losses exceed available moisture then no ponded water remains
+    if ( surfEvap + infil >= surfMoisture )
+    {
+        Losses = surfMoisture;
+        subarea->actdStore = 0.0;
+    }
+
+    // --- otherwise reduce inflow by losses and update depth
+    //     of ponded water and time over which runoff occurs
+    else
+    {
+        subarea->inflow -= surfEvap + infil;
+        subarea->actdStore += subarea->inflow;
+    }
+
+    // --- limit the actual depression storage
+    if ( subarea->actdStore > subarea->dStore )
+    {
+        subarea->actdStore = subarea->dStore;
+    }
+
+    // --- reduce ponded water by the losses
+    if ( Losses > 0.0 )
+    {
+        subarea->actdStore -= (Losses * tStep);
+        surfMoisture -= Losses;
+    }
+
+    // --- do not allow actual depression storage to go negative 
+    if ( subarea->actdStore < 0.0 )
+    {
+        subarea->actdStore = 0.0;
+    }
+
+    // --- compute runoff using Nash-Cascade
+    // --- 3 reservoirs for pervious areas
+    // --- 2 reservoirs for impervious areas
+    
+    // --- 1. reservoir of the cascade
+    Qin = (surfMoisture - subarea->actdStore/tStep) * subsize;
+    subarea->V1 = Qin * kret * (1 - exp(-tStep/kret)) + V1pre * exp(-tStep/kret);
+    Q1 = Qin * (1 - exp(-tStep/kret)) + V1pre / kret * exp(-tStep/kret);
+
+    // --- 2. reservoir of the cascade
+    Qin = Q1;
+    subarea->V2 = Qin * kret * (1 - exp(-tStep/kret)) + V2pre * exp(-tStep/kret);
+    Q2 = Qin * (1 - exp(-tStep/kret)) + V2pre / kret * exp(-tStep/kret);
+
+    // --- compute runoff and ponded water
+    subarea->runoff = Q2 / subsize;
+    subarea->depth = (subarea->V1 + subarea->V2) / subsize;
+
+    // --- 3. reservoir of the cascade (only pervious areas)
+    if (i == PERV)
+    {
+        Qin = Q2;
+        subarea->V3 = Qin * kret * (1 - exp(-tStep/kret)) + V3pre * exp(-tStep/kret);
+        Q3 = Qin * (1 - exp(-tStep/kret)) + V3pre / kret * exp(-tStep/kret);
+    
+        // --- compute runoff and ponded water
+        subarea->runoff = Q3 / subsize;
+        subarea->depth = (subarea->V1 + subarea->V2 + subarea->V3) / subsize;
+    }
+
+    // --- add actual depression storage to ponded water
+    subarea->depth += subarea->actdStore;
+
+    // --- compute runoff volume leaving subcatchment for mass balance purposes
+    //     (fOutlet is the fraction of this subarea's runoff that goes to the
+    //     subcatchment outlet as opposed to another subarea of the subcatchment)
+    if ( subarea->fOutlet > 0.0 )
+    {
+        //Voutflow = 0.5 * (oldRunoff + subarea->runoff) * tStep * subarea->fOutlet;        //SSC
+        Voutflow += subarea->fOutlet * 0.5 * (oldRunoff + subarea->runoff) * area * tStep;
+        //Outflow = subarea->fOutlet * subarea->runoff;                                     //SSC
+    }
     return runoff;
 }
 
