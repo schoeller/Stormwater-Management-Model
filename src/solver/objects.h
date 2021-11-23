@@ -348,7 +348,7 @@ typedef struct
    double        inflow;          // inflow rate (ft/sec)
    double        runoff;          // runoff rate (ft/sec)
    double        depth;           // depth of surface runoff (ft)
-   //-----------------------------
+
    double        V1;              // volume of 1. reservoir, actual timestep (ft^3)
    double        V2;              // volume of 2. reservoir, actual timestep (ft^3)
    double        V3;              // volume of 3. reservoir, actual timestep (ft^3)

@@ -67,7 +67,7 @@
 // Analysis Option Keywords
 #define  w_FLOW_UNITS        "FLOW_UNITS"
 #define  w_INFIL_MODEL       "INFILTRATION"
-#define  w_RUNOFF_MODEL      "RUNOFF_MODEL"
+#define  w_RUNOFF_MODEL      "RUNOFF"
 #define  w_ROUTE_MODEL       "FLOW_ROUTING"
 #define  w_START_DATE        "START_DATE"
 #define  w_START_TIME        "START_TIME"
