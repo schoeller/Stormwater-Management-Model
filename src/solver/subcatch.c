@@ -1087,10 +1087,10 @@ double getSubareaRunoffCascade(int j, int i, double area, double precip, double 
     double    V3pre;                   // volume of 3. reservoir, previous time period (ft3)
     double    Q3;                      // runoff from 3. reservoir, actual time period (ft3/sec)
     double    Losses = 0.0;            // intermediate variable for depression storage
-    double    Outflow = 0.0;           // intermediate variable for outflow
+    //double    Outflow = 0.0;           // intermediate variable for outflow
 
     // --- initialize runoff & losses
-    oldRunoff = subarea->runoff;
+    //oldRunoff = subarea->runoff;
     //subarea->runoff = 0.0;
     //infil    = 0.0;
     //Vevap    = 0.0;
@@ -1098,6 +1098,12 @@ double getSubareaRunoffCascade(int j, int i, double area, double precip, double 
     //Voutflow = 0.0;
     //Losses   = 0.0;
     //Outflow  = 0.0;                                                           //SSC
+    
+    // --- assign pointer to current subarea
+    subarea = &Subcatch[j].subArea[i];
+
+    // --- initialize runoff & losses
+    oldRunoff = subarea->runoff;
 
     // --- initialize cascade volumes  
     V1pre = subarea->V1;
@@ -1112,9 +1118,6 @@ double getSubareaRunoffCascade(int j, int i, double area, double precip, double 
 
     // --- no runoff if no area
     if ( area == 0.0 ) return 0.0;
-
-    // --- assign pointer to current subarea
-    subarea = &Subcatch[j].subArea[i];
 
     // --- assume runoff occurs over entire time step
     tRunoff = tStep;
