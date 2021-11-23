@@ -449,12 +449,12 @@ int project_readOption(char* s1, char* s2)
         InfilModel = m;
         break;
 
-	  // --- choice of runoff model     
-	  case RUNOFF_MODEL:
-		    m = findmatch(s2, RunoffModelWords);
+      // --- choice of runoff model     
+      case RUNOFF_MODEL:
+        m = findmatch(s2, RunoffModelWords);
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
-        RunoffModel = m;
-        break; 
+	RunoffModel = m;
+	break; 
 
       // --- choice of flow routing method
       case ROUTE_MODEL:
@@ -819,8 +819,8 @@ void setDefaults()
    UnitSystem      = US;               // US unit system
    FlowUnits       = CFS;              // CFS flow units
    InfilModel      = HORTON;           // Horton infiltration method
-   RunoffModel     = CASCADE;          // Nash Cascade runoff method
    RouteModel      = KW;               // Kin. wave flow routing method
+   RunoffModel     = MANNING;          // Nash Cascade runoff method
    SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging    //(5.1.013)
    CrownCutoff     = 0.96;                                                     //(5.1.013)
    AllowPonding    = FALSE;            // No ponding at nodes

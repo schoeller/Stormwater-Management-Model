@@ -74,6 +74,7 @@ char* NoYesWords[]         = { w_NO, w_YES, NULL};
 char* OffOnWords[]         = { w_OFF, w_ON, NULL};
 char* OldRouteModelWords[] = { w_NONE, w_NF, w_KW, w_EKW, w_DW, NULL};
 char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
+                               w_RUNOFF_MODEL,
                                w_ROUTE_MODEL,       w_START_DATE,
                                w_START_TIME,        w_END_DATE,
                                w_END_TIME,          w_REPORT_START_DATE,
@@ -95,7 +96,6 @@ char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
                                w_SYS_FLOW_TOL,      w_LAT_FLOW_TOL,
                                w_IGNORE_RDII,       w_MIN_ROUTE_STEP,
                                w_NUM_THREADS,       w_SURCHARGE_METHOD,        //(5.1.013)
-                               w_RUNOFF_MODEL,
                                NULL };
 char* OrificeTypeWords[]   = { w_SIDE, w_BOTTOM, NULL};
 char* OutfallTypeWords[]   = { w_FREE, w_NORMAL, w_FIXED, w_TIDAL,
